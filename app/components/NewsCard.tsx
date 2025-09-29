@@ -18,15 +18,15 @@ export default function NewsCard({ article }: NewsCardProps) {
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [summary, setSummary] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showSummary, setShowSummary] = useState(false);
 
   const handleSummarize = async () => {
     setIsSummarizing(true);
     setError(null);
+    setSummary(null);
     
     try {
-      console.log('🔄 Sending request to backend...');
-      
-      const response = await fetch('http://localhost:5000/api/summarize', {
+      const response = await fetch('https://news-aggregator-backend-6wdx.onrender.com/api/summarize', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -37,14 +37,18 @@ export default function NewsCard({ article }: NewsCardProps) {
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
       const data = await response.json();
-      console.log('Summary received:', data);
       setSummary(data.summary);
+      setShowSummary(true);
     } catch (err) {
-      console.error('❌ Summary error:', err);
       setError('Failed to generate summary. Please try again.');
     } finally {
       setIsSummarizing(false);
     }
+  }
+
+  const closeSummary = () => {
+    setShowSummary(false);
+    setSummary(null);
   }
 
   return (
@@ -52,41 +56,69 @@ export default function NewsCard({ article }: NewsCardProps) {
       {/* Glass reflection */}
       <div className="absolute inset-0 bg-gradient-to-br from-white/15 via-transparent to-white/5 rounded-3xl"></div>
       
-      <h2 className="text-xl font-semibold text-white mb-2 relative z-10 drop-shadow-lg">{article.title}</h2>
-      <p className="text-white/90 mb-4 relative z-10 drop-shadow">{article.description}</p>
-      <div className="flex justify-between text-sm text-white/70 relative z-10 drop-shadow">
+      {/* Content */}
+      <h2 className="text-xl font-semibold text-white mb-2 relative z-10">
+        {article.title}
+      </h2>
+      <p className="text-white/90 mb-4 relative z-10">
+        {article.description}
+      </p>
+      <div className="flex justify-between text-sm text-white/70 relative z-10">
         <span>{article.source}</span>
         <span>{new Date(article.publishedAt).toLocaleDateString()}</span>
       </div>
       
-      {/* Summary Display */}
-      {summary && (
-        <div className="mt-4 p-4 bg-white/10 rounded-xl border border-white/20 relative z-10">
-          <h3 className="text-white font-semibold mb-2">AI Summary:</h3>
-          <p className="text-white/80 text-sm whitespace-pre-line">{summary}</p>
+      {/* Summary Display - NO CLOSE BUTTON INSIDE */}
+      {summary && showSummary && (
+        <div className="mt-4 p-4 bg-white/10 rounded-xl border border-white/20 relative z-10 backdrop-blur-sm">
+          <h3 className="text-white font-semibold mb-3 text-lg">
+            AI Summary
+          </h3>
+          <div className="text-white/90 text-sm space-y-2 leading-relaxed">
+            {summary.split('\n').map((line, index) => (
+              <div key={index} className={line.includes('**') ? 'font-semibold text-white' : ''}>
+                {line.replace(/\*\*/g, '')}
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 pt-3 border-t border-white/20 text-xs text-white/60">
+            Generated with enhanced AI analysis
+          </div>
         </div>
       )}
       
       {/* Error Display */}
       {error && (
         <div className="mt-4 p-3 bg-red-500/20 rounded-xl border border-red-400/30 relative z-10">
-          <p className="text-red-200 text-sm">⚠️ {error}</p>
+          <p className="text-red-200 text-sm">Error: {error}</p>
         </div>
       )}
       
+      {/* SMART BUTTON - TRANSFORMS BASED ON STATE */}
       <button 
-        onClick={handleSummarize}
+        onClick={showSummary ? closeSummary : handleSummarize}
         disabled={isSummarizing}
-        className="mt-4 relative z-10 backdrop-blur-2xl bg-white/15 text-white px-4 py-2 rounded-xl border border-white/40 hover:bg-white/25 disabled:bg-gray-600/30 disabled:cursor-not-allowed transition-all duration-300 font-medium hover:scale-105 disabled:scale-100 drop-shadow-lg"
+        className="mt-4 relative z-10 backdrop-blur-2xl text-white px-4 py-2 rounded-xl border transition-all duration-300 font-medium hover:scale-105 disabled:scale-100 flex items-center justify-center gap-2"
+        style={{
+          backgroundColor: showSummary ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255, 255, 255, 0.15)',
+          borderColor: showSummary ? 'rgba(239, 68, 68, 0.4)' : 'rgba(255, 255, 255, 0.4)',
+        }}
       >
         {isSummarizing ? (
-          <span className="flex items-center justify-center">
-            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+          <>
+            <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
             Summarizing...
-          </span>
+          </>
+        ) : showSummary ? (
+          <>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            Close Summary
+          </>
         ) : (
           'Summarize with AI'
         )}
