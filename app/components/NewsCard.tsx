@@ -8,6 +8,7 @@ interface Article {
   description: string 
   source: string
   publishedAt: string
+  summary?: string // added optional summary in case backend includes it
 }
 
 interface NewsCardProps {
@@ -21,6 +22,13 @@ export default function NewsCard({ article }: NewsCardProps) {
   const [showSummary, setShowSummary] = useState(false);
 
   const handleSummarize = async () => {
+    if (showSummary) {
+      // toggle close
+      setShowSummary(false);
+      setSummary(null);
+      return;
+    }
+
     setIsSummarizing(true);
     setError(null);
     setSummary(null);
@@ -44,11 +52,6 @@ export default function NewsCard({ article }: NewsCardProps) {
     } finally {
       setIsSummarizing(false);
     }
-  }
-
-  const closeSummary = () => {
-    setShowSummary(false);
-    setSummary(null);
   }
 
   return (
@@ -86,23 +89,14 @@ export default function NewsCard({ article }: NewsCardProps) {
           </div>
         </div>
       )}
-      
-      {/* Summary Display - NO CLOSE BUTTON INSIDE */}
-      {summary && showSummary && !isSummarizing && (
-        <div className="mt-4 p-4 bg-white/10 rounded-xl border border-white/20 relative z-10 backdrop-blur-sm">
-          <h3 className="text-white font-semibold mb-3 text-lg">
-            AI Summary
-          </h3>
-          <div className="text-white/90 text-sm space-y-2 leading-relaxed">
-            {summary.split('\n').map((line, index) => (
-              <div key={index} className={line.includes('**') ? 'font-semibold text-white' : ''}>
-                {line.replace(/\*\*/g, '')}
-              </div>
-            ))}
-          </div>
-          <div className="mt-3 pt-3 border-t border-white/20 text-xs text-white/60">
-            Generated with enhanced AI analysis
-          </div>
+
+      {/* ✅ New Summary Display (forced text color + fallback) */}
+      {showSummary && !isSummarizing && (
+        <div className="mt-4 p-4 bg-gray-800/50 rounded-lg border border-gray-700 relative z-10 backdrop-blur-sm">
+          <h4 className="font-semibold text-white mb-2">🤖 AI Summary</h4>
+          <p className="text-gray-100 text-sm leading-relaxed">
+            {summary || article.summary || "Summary not available"}
+          </p>
         </div>
       )}
       
@@ -113,15 +107,11 @@ export default function NewsCard({ article }: NewsCardProps) {
         </div>
       )}
       
-      {/* SMART BUTTON - TRANSFORMS BASED ON STATE */}
-      <button 
-        onClick={showSummary ? closeSummary : handleSummarize}
+      {/* ✅ Updated Summarize Button with gradient */}
+      <button
+        onClick={handleSummarize}
         disabled={isSummarizing}
-        className="mt-4 relative z-10 backdrop-blur-2xl text-white px-4 py-2 rounded-xl border transition-all duration-300 font-medium hover:scale-105 disabled:scale-100 flex items-center justify-center gap-2"
-        style={{
-          backgroundColor: showSummary ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255, 255, 255, 0.15)',
-          borderColor: showSummary ? 'rgba(239, 68, 68, 0.4)' : 'rgba(255, 255, 255, 0.4)',
-        }}
+        className="min-h-[44px] mt-4 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105 border border-blue-400/30 flex items-center justify-center gap-2"
       >
         {isSummarizing ? (
           <>
@@ -132,12 +122,7 @@ export default function NewsCard({ article }: NewsCardProps) {
             Summarizing...
           </>
         ) : showSummary ? (
-          <>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-            Close Summary
-          </>
+          'Close Summary'
         ) : (
           'Summarize with AI'
         )}
