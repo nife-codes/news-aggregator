@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import NewsCard from './components/NewsCard';
+import NewsCardSkeleton from './components/NewsCardSkeleton';
 
 interface Article {
   id: number;
@@ -230,22 +231,6 @@ export default function Home() {
     );
   }
 
-  if (loading) {
-    return (
-      <main className="min-h-screen bg-black p-8 relative overflow-hidden">
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-white text-xl flex items-center">
-            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Loading news...
-          </div>
-        </div>
-      </main>
-    );
-  }
-
   return (
     <main className="min-h-screen bg-black p-8 relative overflow-hidden">
       {/* Background effects */}
@@ -338,15 +323,23 @@ export default function Home() {
         </div>
       </div>
       
-      {/* News grid */}
+      {/* News grid with SKELETONS */}
       <div className="grid gap-6 max-w-4xl mx-auto relative">
-        {filteredArticles.slice(0, visibleCount).map(article => (
-          <NewsCard key={article.id} article={article} />
-        ))}
+        {loading ? (
+          // Show 6 skeletons while loading
+          Array.from({ length: 6 }).map((_, index) => (
+            <NewsCardSkeleton key={index} />
+          ))
+        ) : (
+          // Show actual articles when loaded
+          filteredArticles.slice(0, visibleCount).map(article => (
+            <NewsCard key={article.id} article={article} />
+          ))
+        )}
       </div>
 
       {/* Load More button */}
-      {visibleCount < filteredArticles.length && (
+      {!loading && visibleCount < filteredArticles.length && (
         <div className="text-center mt-8">
           <button 
             onClick={loadMore}
@@ -358,7 +351,7 @@ export default function Home() {
       )}
 
       {/* No results message */}
-      {filteredArticles.length === 0 && !loading && (
+      {!loading && filteredArticles.length === 0 && (
         <div className="text-center text-white/60 py-12">
           <h3 className="text-xl font-semibold mb-2">No articles found</h3>
           <p>Try adjusting your search or filters</p>
@@ -367,7 +360,7 @@ export default function Home() {
 
       {/* Footer */}
       <div className="mt-12 text-center text-white/40 text-sm">
-        <p>Powered by NewsAPI • Built with Next.js & AI</p>
+        <p>Built by Nife.</p>
         <p className="mt-1">© 2024 AI News Aggregator • Portfolio Project</p>
       </div>
     </main>

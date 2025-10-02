@@ -68,8 +68,27 @@ export default function NewsCard({ article }: NewsCardProps) {
         <span>{new Date(article.publishedAt).toLocaleDateString()}</span>
       </div>
       
+      {/* AI SUMMARY LOADING STATE */}
+      {isSummarizing && (
+        <div className="mt-4 p-4 bg-white/10 rounded-xl border border-white/20 relative z-10 backdrop-blur-sm">
+          <h3 className="text-white font-semibold mb-3 text-lg">
+            AI Summary
+          </h3>
+          <div className="space-y-2 animate-pulse">
+            <div className="h-3 bg-white/20 rounded w-full"></div>
+            <div className="h-3 bg-white/20 rounded w-5/6"></div>
+            <div className="h-3 bg-white/20 rounded w-4/6"></div>
+            <div className="h-3 bg-white/20 rounded w-3/4"></div>
+            <div className="h-3 bg-white/20 rounded w-5/6"></div>
+          </div>
+          <div className="mt-3 pt-3 border-t border-white/20 text-xs text-white/60">
+            Generating AI analysis...
+          </div>
+        </div>
+      )}
+      
       {/* Summary Display - NO CLOSE BUTTON INSIDE */}
-      {summary && showSummary && (
+      {summary && showSummary && !isSummarizing && (
         <div className="mt-4 p-4 bg-white/10 rounded-xl border border-white/20 relative z-10 backdrop-blur-sm">
           <h3 className="text-white font-semibold mb-3 text-lg">
             AI Summary
