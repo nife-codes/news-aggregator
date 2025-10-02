@@ -13,66 +13,208 @@ interface Article {
   imageUrl?: string;
 }
 
+const CATEGORIES = [
+  "All", "Technology", "Business", "Science", "Entertainment", "Sports"
+];
+
+// ENHANCED Category detection with more comprehensive logic
+const getArticleCategory = (article: Article): string => {
+  const title = article.title.toLowerCase();
+  const description = article.description.toLowerCase();
+  const source = article.source.toLowerCase();
+
+  // Technology
+  if (title.includes('tech') || title.includes('ai') || title.includes('software') || 
+      title.includes('computer') || title.includes('digital') || title.includes('app') ||
+      title.includes('cyber') || title.includes('startup') || title.includes('innovation') ||
+      description.includes('technology') || description.includes('digital') || 
+      description.includes('software') || description.includes('computer') ||
+      source.includes('tech') || source.includes('gizmodo') || source.includes('wired') ||
+      source.includes('techcrunch') || source.includes('verge')) {
+    return 'Technology';
+  }
+  
+  // Business
+  if (title.includes('business') || title.includes('market') || title.includes('economy') ||
+      title.includes('stock') || title.includes('investment') || title.includes('company') ||
+      title.includes('financial') || title.includes('trade') || title.includes('bank') ||
+      description.includes('business') || description.includes('economic') || 
+      description.includes('financial') || description.includes('market') ||
+      source.includes('business') || source.includes('forbes') || 
+      source.includes('bloomberg') || source.includes('wsj')) {
+    return 'Business';
+  }
+  
+  // Science
+  if (title.includes('science') || title.includes('research') || title.includes('study') ||
+      title.includes('nasa') || title.includes('discover') || title.includes('planet') ||
+      title.includes('space') || title.includes('climate') || title.includes('medical') ||
+      description.includes('scientist') || description.includes('research') || 
+      description.includes('study') || description.includes('discovery') ||
+      source.includes('science') || source.includes('nature') || 
+      source.includes('scientific')) {
+    return 'Science';
+  }
+  
+  // Entertainment
+  if (title.includes('movie') || title.includes('film') || title.includes('entertainment') ||
+      title.includes('music') || title.includes('celebrity') || title.includes('show') ||
+      title.includes('actor') || title.includes('television') || title.includes('gaming') ||
+      description.includes('entertainment') || description.includes('film') || 
+      description.includes('music') || description.includes('celebrity') ||
+      source.includes('entertainment') || source.includes('variety') || 
+      source.includes('hollywood')) {
+    return 'Entertainment';
+  }
+  
+  // Sports
+  if (title.includes('sport') || title.includes('game') || title.includes('team') ||
+      title.includes('player') || title.includes('championship') || title.includes('win') ||
+      title.includes('match') || title.includes('tournament') || title.includes('league') ||
+      description.includes('sports') || description.includes('game') || 
+      description.includes('tournament') || description.includes('athlete') ||
+      source.includes('espn') || source.includes('sport') || source.includes('athletic')) {
+    return 'Sports';
+  }
+  
+  // If no category detected, assign randomly for demo purposes
+  const categories = ['Technology', 'Business', 'Science', 'Entertainment', 'Sports'];
+  return categories[Math.floor(Math.random() * categories.length)];
+};
+
 export default function Home() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(6); // Show only 6 initially
+  const [visibleCount, setVisibleCount] = useState(6);
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [sortBy, setSortBy] = useState('newest');
+
+  // Filter and sort articles
+  const filteredArticles = articles
+    .filter(article => {
+      const matchesSearch = article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           article.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           article.source.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const matchesCategory = selectedCategory === 'All' || 
+                             getArticleCategory(article) === selectedCategory;
+      
+      return matchesSearch && matchesCategory;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'newest') {
+        return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+      } else {
+        return new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime();
+      }
+    });
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  // UPDATED: Modified fetchNews to accept category parameter
+  const fetchNews = async (category = 'All') => {
+    try {
+      setLoading(true);
+      
+      // Build URL with category parameter
+      const url = category === 'All' 
+        ? 'https://news-aggregator-backend-6wdx.onrender.com/api/news'
+        : `https://news-aggregator-backend-6wdx.onrender.com/api/news?category=${category}`;
+      
+      const response = await fetch(url);
+      
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      
+      const data = await response.json();
+      
+      if (data && data.length > 0) {
+        setArticles(data);
+      } else {
+        throw new Error('No articles received');
+      }
+    } catch (err) {
+      setError('Failed to load live news. Using demo articles.');
+      // Enhanced fallback data with better category coverage
+      setArticles([
+        {
+          id: 1,
+          title: "AI Breakthrough: New Model Outperforms Humans",
+          description: "Researchers develop AI system that surpasses human performance in complex reasoning tasks",
+          source: "Tech Insider",
+          publishedAt: new Date().toISOString(),
+        },
+        {
+          id: 2,
+          title: "Stock Markets Reach All-Time High", 
+          description: "Major indices surge amid economic optimism and strong corporate earnings",
+          source: "Business Daily",
+          publishedAt: new Date().toISOString(),
+        },
+        {
+          id: 3,
+          title: "NASA Discovers New Earth-Like Planet",
+          description: "Scientists find potentially habitable exoplanet in nearby star system",
+          source: "Science Journal", 
+          publishedAt: new Date().toISOString(),
+        },
+        {
+          id: 4,
+          title: "New Blockbuster Movie Breaks Records",
+          description: "Latest film franchise installment dominates box office worldwide",
+          source: "Entertainment Weekly",
+          publishedAt: new Date().toISOString(),
+        },
+        {
+          id: 5,
+          title: "Championship Game Ends in Historic Victory",
+          description: "Underdog team wins against all odds in thrilling finale",
+          source: "Sports Network",
+          publishedAt: new Date().toISOString(),
+        },
+        {
+          id: 6,
+          title: "Quantum Computing Milestone Reached",
+          description: "Scientists achieve quantum supremacy with revolutionary new processor design",
+          source: "Science Daily",
+          publishedAt: new Date(Date.now() - 86400000).toISOString(),
+        },
+        {
+          id: 7,
+          title: "Global Tech Summit Announces Climate Initiatives",
+          description: "Major tech companies commit to carbon neutrality by 2030",
+          source: "Business Tech",
+          publishedAt: new Date(Date.now() - 172800000).toISOString(),
+        },
+        {
+          id: 8,
+          title: "Music Festival Lineup Announced",
+          description: "Biggest names in music confirmed for summer's hottest event",
+          source: "Entertainment Tonight",
+          publishedAt: new Date(Date.now() - 259200000).toISOString(),
+        }
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // UPDATED: useEffect now responds to category changes
   useEffect(() => {
     if (!mounted) return;
+    fetchNews(selectedCategory);
+  }, [mounted, selectedCategory]); // Added selectedCategory dependency
 
-    const fetchNews = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch('https://news-aggregator-backend-6wdx.onrender.com/api/news');
-        
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        
-        const data = await response.json();
-        
-        if (data && data.length > 0) {
-          setArticles(data);
-        } else {
-          throw new Error('No articles received');
-        }
-      } catch (err) {
-        setError('Failed to load live news. Using demo articles.');
-        setArticles([
-          {
-            id: 1,
-            title: "AI Breakthrough: New Model Outperforms Humans",
-            description: "Researchers develop AI system that surpasses human performance in complex reasoning tasks",
-            source: "Tech Insider",
-            publishedAt: new Date().toISOString(),
-          },
-          {
-            id: 2,
-            title: "Global Tech Summit Announces Climate Initiatives", 
-            description: "Major tech companies commit to carbon neutrality by 2030",
-            source: "Business Tech",
-            publishedAt: new Date().toISOString(),
-          },
-          {
-            id: 3,
-            title: "Quantum Computing Milestone Reached",
-            description: "Scientists achieve quantum supremacy with new processor design",
-            source: "Science Daily", 
-            publishedAt: new Date().toISOString(),
-          }
-        ]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchNews();
-  }, [mounted]);
+  // UPDATED: Category change handler that resets visible count
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    setVisibleCount(6); // Reset visible count when category changes
+  };
 
   const loadMore = () => {
     setVisibleCount(prev => prev + 6);
@@ -117,20 +259,94 @@ export default function Home() {
         <h1 className="text-5xl font-bold text-center text-white mb-2">AI News Aggregator</h1>
         <p className="text-center text-white/80">Stay informed with AI-powered insights</p>
         {error && <p className="text-center text-yellow-400 mt-2">{error}</p>}
-        <div className="text-center text-white/60 text-sm mt-2">
-          Showing {Math.min(visibleCount, articles.length)} of {articles.length} articles
+      </div>
+
+      {/* Search and Filters Section */}
+      <div className="relative backdrop-blur-2xl bg-white/10 rounded-2xl p-6 mb-8 border border-white/30 shadow-xl mx-auto max-w-4xl">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          
+          {/* Search Input */}
+          <div className="md:col-span-2">
+            <label htmlFor="search" className="block text-white text-sm font-medium mb-2">
+              Search Articles
+            </label>
+            <input
+              id="search"
+              type="text"
+              placeholder="Search by title, description, or source..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/20 text-white placeholder-white/60 focus:outline-none focus:border-white/40 transition-colors"
+            />
+          </div>
+
+          {/* Category Filter - UPDATED with new handler */}
+          <div>
+            <label htmlFor="category" className="block text-white text-sm font-medium mb-2">
+              Category
+            </label>
+            <select
+              id="category"
+              value={selectedCategory}
+              onChange={(e) => handleCategoryChange(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/20 text-white focus:outline-none focus:border-white/40 transition-colors"
+            >
+              {CATEGORIES.map(category => (
+                <option key={category} value={category} className="bg-gray-800">
+                  {category}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Sort Filter */}
+          <div>
+            <label htmlFor="sort" className="block text-white text-sm font-medium mb-2">
+              Sort By
+            </label>
+            <select
+              id="sort"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/20 text-white focus:outline-none focus:border-white/40 transition-colors"
+            >
+              <option value="newest" className="bg-gray-800">Newest First</option>
+              <option value="oldest" className="bg-gray-800">Oldest First</option>
+            </select>
+          </div>
+
+        </div>
+
+        {/* Results Count */}
+        <div className="mt-4 flex justify-between items-center text-white/80 text-sm">
+          <span>
+            Showing {filteredArticles.slice(0, visibleCount).length} of {filteredArticles.length} articles
+            {searchQuery && ` for "${searchQuery}"`}
+          </span>
+          {(searchQuery || selectedCategory !== 'All') && (
+            <button
+              onClick={() => {
+                setSearchQuery('');
+                setSelectedCategory('All');
+                setSortBy('newest');
+              }}
+              className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
+            >
+              Clear Filters
+            </button>
+          )}
         </div>
       </div>
       
-      {/* News grid - LIMITED to visibleCount */}
+      {/* News grid */}
       <div className="grid gap-6 max-w-4xl mx-auto relative">
-        {articles.slice(0, visibleCount).map(article => (
+        {filteredArticles.slice(0, visibleCount).map(article => (
           <NewsCard key={article.id} article={article} />
         ))}
       </div>
 
       {/* Load More button */}
-      {visibleCount < articles.length && (
+      {visibleCount < filteredArticles.length && (
         <div className="text-center mt-8">
           <button 
             onClick={loadMore}
@@ -138,6 +354,14 @@ export default function Home() {
           >
             Load More Articles
           </button>
+        </div>
+      )}
+
+      {/* No results message */}
+      {filteredArticles.length === 0 && !loading && (
+        <div className="text-center text-white/60 py-12">
+          <h3 className="text-xl font-semibold mb-2">No articles found</h3>
+          <p>Try adjusting your search or filters</p>
         </div>
       )}
 
