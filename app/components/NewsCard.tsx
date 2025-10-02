@@ -22,16 +22,22 @@ export default function NewsCard({ article }: NewsCardProps) {
   const [showSummary, setShowSummary] = useState(false);
 
   const handleSummarize = async () => {
+    // If summary is already shown, just toggle it closed
     if (showSummary) {
-      // toggle close
       setShowSummary(false);
       setSummary(null);
       return;
     }
 
+    // If we already have a summary, just show it
+    if (summary) {
+      setShowSummary(true);
+      return;
+    }
+
+    // Otherwise, fetch new summary
     setIsSummarizing(true);
     setError(null);
-    setSummary(null);
     
     try {
       const response = await fetch('https://news-aggregator-backend-6wdx.onrender.com/api/summarize', {
@@ -49,6 +55,7 @@ export default function NewsCard({ article }: NewsCardProps) {
       setShowSummary(true);
     } catch (err) {
       setError('Failed to generate summary. Please try again.');
+      console.error('Summary error:', err);
     } finally {
       setIsSummarizing(false);
     }
@@ -111,7 +118,7 @@ export default function NewsCard({ article }: NewsCardProps) {
       <button
         onClick={handleSummarize}
         disabled={isSummarizing}
-        className="min-h-[44px] mt-4 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105 border border-blue-400/30 flex items-center justify-center gap-2"
+        className="min-h-[44px] mt-4 px-4 py-2 bg-gradient-to-r from-blue-500/80 to-purple-500/80 hover:from-blue-600/80 hover:to-purple-600/80 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105 border border-blue-400/30 flex items-center justify-center gap-2 backdrop-blur-sm"
       >
         {isSummarizing ? (
           <>
