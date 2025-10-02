@@ -8,7 +8,7 @@ interface Article {
   description: string 
   source: string
   publishedAt: string
-  summary?: string // added optional summary in case backend includes it
+  summary?: string // optional summary
 }
 
 interface NewsCardProps {
@@ -90,7 +90,7 @@ export default function NewsCard({ article }: NewsCardProps) {
         </div>
       )}
 
-      {/* ✅ New Summary Display (forced text color + fallback) */}
+      {/* ✅ New Summary Display */}
       {showSummary && !isSummarizing && (
         <div className="mt-4 p-4 bg-gray-800/50 rounded-lg border border-gray-700 relative z-10 backdrop-blur-sm">
           <h4 className="font-semibold text-white mb-2">🤖 AI Summary</h4>
@@ -107,7 +107,7 @@ export default function NewsCard({ article }: NewsCardProps) {
         </div>
       )}
       
-      {/* ✅ Updated Summarize Button with gradient */}
+      {/* ✅ Fixed Gradient Button (toggle works now) */}
       <button
         onClick={handleSummarize}
         disabled={isSummarizing}
