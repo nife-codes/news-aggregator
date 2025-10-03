@@ -114,7 +114,7 @@ export default function NewsCard({ article }: NewsCardProps) {
         </div>
       )}
       
-      {/* ✅ Fixed Gradient Button (toggle works now) */}
+      {/* Fixed Gradient Button (toggle works now) */}
       <button
         onClick={handleSummarize}
         disabled={isSummarizing}
@@ -131,7 +131,7 @@ export default function NewsCard({ article }: NewsCardProps) {
         ) : showSummary ? (
           'Close Summary'
         ) : (
-          'Summarize with AI'
+          'Summarize'
         )}
       </button>
     </div>
