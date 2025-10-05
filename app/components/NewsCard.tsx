@@ -21,6 +21,37 @@ export default function NewsCard({ article }: NewsCardProps) {
   const [summary, setSummary] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Format markdown-style summary to HTML - COMPACT VERSION
+  const formatSummary = (text: string) => {
+    // Split into lines and process each
+    const lines = text.split('\n').filter(line => line.trim());
+    
+    let html = '';
+    
+    lines.forEach(line => {
+      const trimmed = line.trim();
+      
+      // Skip empty lines
+      if (!trimmed) return;
+      
+      // Section headers (lines ending with :)
+      if (trimmed.endsWith(':')) {
+        html += `<div class="text-purple-300 font-bold mt-3 mb-1">${trimmed}</div>`;
+      }
+      // Bullet points - convert to regular text
+      else if (trimmed.startsWith('•')) {
+        const text = trimmed.replace(/^•\s*/, '');
+        html += `<div class="mb-1">${text.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')}</div>`;
+      }
+      // Regular paragraphs
+      else {
+        html += `<div class="mb-2">${trimmed.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')}</div>`;
+      }
+    });
+    
+    return html;
+  };
+
   const handleSummarize = async () => {
     if (showSummary) {
       setShowSummary(false);
@@ -168,10 +199,11 @@ export default function NewsCard({ article }: NewsCardProps) {
               </div>
             </div>
           ) : (
-            <div className="prose prose-invert prose-sm sm:prose-base max-w-none">
-              <div className="text-white/90 text-xs sm:text-sm leading-relaxed whitespace-pre-line max-h-[60vh] overflow-y-auto">
-                {summary}
-              </div>
+            <div className="max-h-[60vh] overflow-y-auto">
+              <div 
+                className="text-white/90 text-sm sm:text-base leading-snug"
+                dangerouslySetInnerHTML={{ __html: formatSummary(summary) }}
+              />
             </div>
           )}
         </div>
