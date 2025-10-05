@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import NewsCard from './components/NewsCard';
-import NewsCardSkeleton from './components/NewsCardSkeleton';
+import AuthModal from './components/AuthModal';
+import UserProfile from './components/UserProfile';
+import { useAuth } from './context/AuthContext';
 
 interface Article {
   id: number;
@@ -93,6 +95,10 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortBy, setSortBy] = useState('newest');
+  
+  // Auth state
+  const { user } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Filter and sort articles
   const filteredArticles = articles
@@ -118,24 +124,30 @@ export default function Home() {
     setMounted(true);
   }, []);
 
-  // UPDATED: Modified fetchNews to accept category parameter
-  const fetchNews = async (category = 'All') => {
+  // UPDATED: Fetch ALL categories from backend, filter on frontend
+  const fetchNews = async () => {
     try {
       setLoading(true);
       
-      // Build URL with category parameter
-      const url = category === 'All' 
-        ? 'https://news-aggregator-backend-6wdx.onrender.com/api/news'
-        : `https://news-aggregator-backend-6wdx.onrender.com/api/news?category=${category}`;
+      // Fetch from all categories
+      const categories = ['technology', 'business', 'science', 'entertainment', 'sports'];
+      const fetchPromises = categories.map(cat => 
+        fetch(`https://news-aggregator-backend-6wdx.onrender.com/api/news?category=${cat}`)
+          .then(res => res.ok ? res.json() : [])
+          .catch(() => [])
+      );
       
-      const response = await fetch(url);
+      const results = await Promise.all(fetchPromises);
+      const allArticles = results.flat();
       
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      // Fix duplicate IDs by making them unique
+      const articlesWithUniqueIds = allArticles.map((article, index) => ({
+        ...article,
+        id: index + 1
+      }));
       
-      const data = await response.json();
-      
-      if (data && data.length > 0) {
-        setArticles(data);
+      if (articlesWithUniqueIds.length > 0) {
+        setArticles(articlesWithUniqueIds);
       } else {
         throw new Error('No articles received');
       }
@@ -205,16 +217,16 @@ export default function Home() {
     }
   };
 
-  // UPDATED: useEffect now responds to category changes
+  // Fetch news on mount only
   useEffect(() => {
     if (!mounted) return;
-    fetchNews(selectedCategory);
-  }, [mounted, selectedCategory]); // Added selectedCategory dependency
+    fetchNews();
+  }, [mounted]); // Only fetch once on mount
 
-  // UPDATED: Category change handler that resets visible count
+  // Category change handler
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
-    setVisibleCount(6); // Reset visible count when category changes
+    setVisibleCount(6);
   };
 
   const loadMore = () => {
@@ -231,6 +243,22 @@ export default function Home() {
     );
   }
 
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-black p-8 relative overflow-hidden">
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-white text-xl flex items-center">
+            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Loading news...
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-black p-8 relative overflow-hidden">
       {/* Background effects */}
@@ -241,9 +269,30 @@ export default function Home() {
 
       {/* Glass header */}
       <div className="relative backdrop-blur-2xl bg-white/10 rounded-3xl p-8 mb-8 border border-white/30 shadow-2xl mx-auto max-w-4xl">
-        <h1 className="text-5xl font-bold text-center text-white mb-2">AI News Aggregator</h1>
-        <p className="text-center text-white/80">Stay informed with AI-powered insights</p>
-        {error && <p className="text-center text-yellow-400 mt-2">{error}</p>}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex-1">
+            <h1 className="text-5xl font-bold text-white mb-2">AI News Aggregator</h1>
+            <p className="text-white/80">Stay informed with AI-powered insights</p>
+            {error && <p className="text-yellow-400 mt-2">{error}</p>}
+          </div>
+          
+          {/* Auth Button */}
+          <div className="ml-4">
+            {user ? (
+              <UserProfile />
+            ) : (
+              <button
+                onClick={() => setShowAuthModal(true)}
+                className="px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-xl font-medium transition-all flex items-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                Sign In
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Search and Filters Section */}
@@ -323,23 +372,15 @@ export default function Home() {
         </div>
       </div>
       
-      {/* News grid with SKELETONS */}
+      {/* News grid */}
       <div className="grid gap-6 max-w-4xl mx-auto relative">
-        {loading ? (
-          // Show 6 skeletons while loading
-          Array.from({ length: 6 }).map((_, index) => (
-            <NewsCardSkeleton key={index} />
-          ))
-        ) : (
-          // Show actual articles when loaded
-          filteredArticles.slice(0, visibleCount).map(article => (
-            <NewsCard key={article.id} article={article} />
-          ))
-        )}
+        {filteredArticles.slice(0, visibleCount).map(article => (
+          <NewsCard key={article.id} article={article} />
+        ))}
       </div>
 
       {/* Load More button */}
-      {!loading && visibleCount < filteredArticles.length && (
+      {visibleCount < filteredArticles.length && (
         <div className="text-center mt-8">
           <button 
             onClick={loadMore}
@@ -351,7 +392,7 @@ export default function Home() {
       )}
 
       {/* No results message */}
-      {!loading && filteredArticles.length === 0 && (
+      {filteredArticles.length === 0 && !loading && (
         <div className="text-center text-white/60 py-12">
           <h3 className="text-xl font-semibold mb-2">No articles found</h3>
           <p>Try adjusting your search or filters</p>
@@ -360,9 +401,12 @@ export default function Home() {
 
       {/* Footer */}
       <div className="mt-12 text-center text-white/40 text-sm">
-        <p>Built by Nife.</p>
+        <p>Powered by NewsAPI • Built with Next.js & AI</p>
         <p className="mt-1">© 2024 AI News Aggregator • Portfolio Project</p>
       </div>
+
+      {/* Auth Modal */}
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </main>
   );
 }
