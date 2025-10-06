@@ -124,34 +124,31 @@ export default function Home() {
     setMounted(true);
   }, []);
 
-  // UPDATED: Fetch ALL categories from backend, filter on frontend
+  // FIXED: Fetch only from selected category
   const fetchNews = async () => {
     try {
       setLoading(true);
       
-      // Fetch from all categories
-      const categories = ['technology', 'business', 'science', 'entertainment', 'sports'];
-      const fetchPromises = categories.map(cat => 
-        fetch(`https://news-aggregator-backend-6wdx.onrender.com/api/news?category=${cat}`)
-          .then(res => res.ok ? res.json() : [])
-          .catch(() => [])
-      );
+      // Fetch ONLY from the selected category (or 'general' for 'All')
+      const categoryToFetch = selectedCategory === 'All' ? 'general' : selectedCategory.toLowerCase();
       
-      const results = await Promise.all(fetchPromises);
-      const allArticles = results.flat();
+      console.log(`📡 Fetching ${categoryToFetch} news...`);
       
-      // Fix duplicate IDs by making them unique
-      const articlesWithUniqueIds = allArticles.map((article, index) => ({
-        ...article,
-        id: index + 1
-      }));
+      const response = await fetch(`https://news-aggregator-backend-6wdx.onrender.com/api/news?category=${selectedCategory}`);
       
-      if (articlesWithUniqueIds.length > 0) {
-        setArticles(articlesWithUniqueIds);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const articlesData = await response.json();
+      
+      if (articlesData.length > 0) {
+        setArticles(articlesData);
       } else {
         throw new Error('No articles received');
       }
     } catch (err) {
+      console.error('News fetch error:', err);
       setError('Failed to load live news. Using demo articles.');
       // Enhanced fallback data with better category coverage
       setArticles([
@@ -189,27 +186,6 @@ export default function Home() {
           description: "Underdog team wins against all odds in thrilling finale",
           source: "Sports Network",
           publishedAt: new Date().toISOString(),
-        },
-        {
-          id: 6,
-          title: "Quantum Computing Milestone Reached",
-          description: "Scientists achieve quantum supremacy with revolutionary new processor design",
-          source: "Science Daily",
-          publishedAt: new Date(Date.now() - 86400000).toISOString(),
-        },
-        {
-          id: 7,
-          title: "Global Tech Summit Announces Climate Initiatives",
-          description: "Major tech companies commit to carbon neutrality by 2030",
-          source: "Business Tech",
-          publishedAt: new Date(Date.now() - 172800000).toISOString(),
-        },
-        {
-          id: 8,
-          title: "Music Festival Lineup Announced",
-          description: "Biggest names in music confirmed for summer's hottest event",
-          source: "Entertainment Tonight",
-          publishedAt: new Date(Date.now() - 259200000).toISOString(),
         }
       ]);
     } finally {
@@ -217,11 +193,11 @@ export default function Home() {
     }
   };
 
-  // Fetch news on mount only
+  // Fetch news on mount AND when category changes
   useEffect(() => {
     if (!mounted) return;
     fetchNews();
-  }, [mounted]); // Only fetch once on mount
+  }, [mounted, selectedCategory]); // Refetch when category changes
 
   // Category change handler
   const handleCategoryChange = (category: string) => {
@@ -276,16 +252,16 @@ export default function Home() {
             {error && <p className="text-yellow-400 mt-2">{error}</p>}
           </div>
           
-          {/* Auth Button */}
+          {/* Auth Button - FIXED SIZE */}
           <div className="ml-4">
             {user ? (
               <UserProfile />
             ) : (
               <button
                 onClick={() => setShowAuthModal(true)}
-                className="px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-xl font-medium transition-all flex items-center gap-2"
+                className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium transition-all flex items-center gap-2 text-sm min-h-[40px]"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
                 Sign In
