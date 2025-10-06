@@ -54,12 +54,12 @@ export default function UserProfile() {
         <>
           {/* Backdrop */}
           <div 
-            className="fixed inset-0 z-10" 
+            className="fixed inset-0 z-40" 
             onClick={() => setShowMenu(false)}
           />
           
           {/* Menu */}
-          <div className="absolute right-0 mt-2 w-64 bg-gray-900 border border-white/20 rounded-xl shadow-2xl z-20 overflow-hidden">
+          <div className="absolute right-0 mt-2 w-64 bg-gray-900 border border-white/20 rounded-xl shadow-2xl z-50 overflow-hidden">
             {/* User Info */}
             <div className="p-4 border-b border-white/10">
               <p className="text-white font-medium">{user.displayName || 'User'}</p>
