@@ -124,31 +124,34 @@ export default function Home() {
     setMounted(true);
   }, []);
 
-  // FIXED: Fetch only from selected category
+  // UPDATED: Fetch ALL categories from backend, filter on frontend
   const fetchNews = async () => {
     try {
       setLoading(true);
       
-      // Fetch ONLY from the selected category (or 'general' for 'All')
-      const categoryToFetch = selectedCategory === 'All' ? 'general' : selectedCategory.toLowerCase();
+      // Fetch from all categories
+      const categories = ['technology', 'business', 'science', 'entertainment', 'sports'];
+      const fetchPromises = categories.map(cat => 
+        fetch(`https://news-aggregator-backend-6wdx.onrender.com/api/news?category=${cat}`)
+          .then(res => res.ok ? res.json() : [])
+          .catch(() => [])
+      );
       
-      console.log(`📡 Fetching ${categoryToFetch} news...`);
+      const results = await Promise.all(fetchPromises);
+      const allArticles = results.flat();
       
-      const response = await fetch(`https://news-aggregator-backend-6wdx.onrender.com/api/news?category=${selectedCategory}`);
+      // Fix duplicate IDs by making them unique
+      const articlesWithUniqueIds = allArticles.map((article, index) => ({
+        ...article,
+        id: index + 1
+      }));
       
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const articlesData = await response.json();
-      
-      if (articlesData.length > 0) {
-        setArticles(articlesData);
+      if (articlesWithUniqueIds.length > 0) {
+        setArticles(articlesWithUniqueIds);
       } else {
         throw new Error('No articles received');
       }
     } catch (err) {
-      console.error('News fetch error:', err);
       setError('Failed to load live news. Using demo articles.');
       // Enhanced fallback data with better category coverage
       setArticles([
@@ -186,6 +189,27 @@ export default function Home() {
           description: "Underdog team wins against all odds in thrilling finale",
           source: "Sports Network",
           publishedAt: new Date().toISOString(),
+        },
+        {
+          id: 6,
+          title: "Quantum Computing Milestone Reached",
+          description: "Scientists achieve quantum supremacy with revolutionary new processor design",
+          source: "Science Daily",
+          publishedAt: new Date(Date.now() - 86400000).toISOString(),
+        },
+        {
+          id: 7,
+          title: "Global Tech Summit Announces Climate Initiatives",
+          description: "Major tech companies commit to carbon neutrality by 2030",
+          source: "Business Tech",
+          publishedAt: new Date(Date.now() - 172800000).toISOString(),
+        },
+        {
+          id: 8,
+          title: "Music Festival Lineup Announced",
+          description: "Biggest names in music confirmed for summer's hottest event",
+          source: "Entertainment Tonight",
+          publishedAt: new Date(Date.now() - 259200000).toISOString(),
         }
       ]);
     } finally {
@@ -193,11 +217,11 @@ export default function Home() {
     }
   };
 
-  // Fetch news on mount AND when category changes
+  // Fetch news on mount only
   useEffect(() => {
     if (!mounted) return;
     fetchNews();
-  }, [mounted, selectedCategory]); // Refetch when category changes
+  }, [mounted]); // Only fetch once on mount
 
   // Category change handler
   const handleCategoryChange = (category: string) => {
@@ -236,39 +260,35 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-black p-8 relative overflow-hidden">
+    <main className="min-h-screen bg-black p-4 sm:p-8 relative overflow-hidden">
       {/* Background effects */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 left-10 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-20 right-10 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
       </div>
 
-      {/* Glass header */}
-      <div className="relative backdrop-blur-2xl bg-white/10 rounded-3xl p-8 mb-8 border border-white/30 shadow-2xl mx-auto max-w-4xl">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex-1">
-            <h1 className="text-5xl font-bold text-white mb-2">AI News Aggregator</h1>
-            <p className="text-white/80">Stay informed with AI-powered insights</p>
-            {error && <p className="text-yellow-400 mt-2">{error}</p>}
-          </div>
-          
-          {/* Auth Button - FIXED SIZE */}
-          <div className="ml-4">
-            {user ? (
-              <UserProfile />
-            ) : (
-              <button
-                onClick={() => setShowAuthModal(true)}
-                className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium transition-all flex items-center gap-2 text-sm min-h-[40px]"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                Sign In
-              </button>
-            )}
-          </div>
-        </div>
+      {/* Auth Button - Separate, outside header */}
+      <div className="relative flex justify-end mb-4 safe-area-top">
+        {user ? (
+          <UserProfile />
+        ) : (
+          <button
+            onClick={() => setShowAuthModal(true)}
+            className="px-4 sm:px-6 py-2 sm:py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-xl font-medium transition-all flex items-center gap-2 text-sm sm:text-base"
+          >
+            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            Sign In
+          </button>
+        )}
+      </div>
+
+      {/* Glass header - Now cleaner without auth button */}
+      <div className="relative backdrop-blur-2xl bg-white/10 rounded-3xl p-6 sm:p-8 mb-8 border border-white/30 shadow-2xl mx-auto max-w-4xl">
+        <h1 className="text-4xl sm:text-5xl font-bold text-center text-white mb-2">AI News Aggregator</h1>
+        <p className="text-center text-white/80">Stay informed with AI-powered insights</p>
+        {error && <p className="text-center text-yellow-400 mt-2">{error}</p>}
       </div>
 
       {/* Search and Filters Section */}

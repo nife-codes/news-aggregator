@@ -49,6 +49,8 @@ body {
   animation: float-medium 4s ease-in-out infinite;
 }
 
+
+
 /* --- Animation Delay Utilities --- */
 
 .animation-delay-500 { animation-delay: 0.5s; }
@@ -58,3 +60,7 @@ body {
 .animation-delay-2000 { animation-delay: 2s; }
 .animation-delay-2500 { animation-delay: 2.5s; }
 .animation-delay-3000 { animation-delay: 3s; }
+
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
