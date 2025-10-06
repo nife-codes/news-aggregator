@@ -25,8 +25,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       setError('');
       await signInWithGoogle();
       onClose();
-    } catch (err: any) {
-      setError(err.message || 'Failed to sign in with Google');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to sign in with Google');
     } finally {
       setLoading(false);
     }
@@ -47,8 +47,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       onClose();
       setEmail('');
       setPassword('');
-    } catch (err: any) {
-      setError(err.message || 'Authentication failed');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Authentication failed');
     } finally {
       setLoading(false);
     }
