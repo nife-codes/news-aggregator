@@ -14,14 +14,20 @@ interface Article {
   publishedAt: string;
   url?: string;
   imageUrl?: string;
+  category?: string; // Added category to interface
 }
 
 const CATEGORIES = [
   "All", "Technology", "Business", "Science", "Entertainment", "Sports"
 ];
 
-// ENHANCED Category detection with more comprehensive logic
+// SIMPLIFIED Category detection - just use the category from backend
 const getArticleCategory = (article: Article): string => {
+  // If article already has a category from backend, use it
+  if (article.category) {
+    return article.category;
+  }
+  
   const title = article.title.toLowerCase();
   const description = article.description.toLowerCase();
   const source = article.source.toLowerCase();
@@ -124,30 +130,22 @@ export default function Home() {
     setMounted(true);
   }, []);
 
-  // UPDATED: Fetch ALL categories from backend, filter on frontend
+  // FIXED: Single API call for ALL articles
   const fetchNews = async () => {
     try {
       setLoading(true);
       
-      // Fetch from all categories
-      const categories = ['technology', 'business', 'science', 'entertainment', 'sports'];
-      const fetchPromises = categories.map(cat => 
-        fetch(`https://news-aggregator-backend-6wdx.onrender.com/api/news?category=${cat}`)
-          .then(res => res.ok ? res.json() : [])
-          .catch(() => [])
-      );
+      // Use the selected category for the API call
+      const response = await fetch(`https://news-aggregator-backend-6wdx.onrender.com/api/news?category=${selectedCategory}`);
       
-      const results = await Promise.all(fetchPromises);
-      const allArticles = results.flat();
+      if (!response.ok) {
+        throw new Error('Failed to fetch news');
+      }
       
-      // Fix duplicate IDs by making them unique
-      const articlesWithUniqueIds = allArticles.map((article, index) => ({
-        ...article,
-        id: index + 1
-      }));
+      const allArticles = await response.json();
       
-      if (articlesWithUniqueIds.length > 0) {
-        setArticles(articlesWithUniqueIds);
+      if (allArticles.length > 0) {
+        setArticles(allArticles);
       } else {
         throw new Error('No articles received');
       }
@@ -161,6 +159,7 @@ export default function Home() {
           description: "Researchers develop AI system that surpasses human performance in complex reasoning tasks",
           source: "Tech Insider",
           publishedAt: new Date().toISOString(),
+          category: "Technology"
         },
         {
           id: 2,
@@ -168,6 +167,7 @@ export default function Home() {
           description: "Major indices surge amid economic optimism and strong corporate earnings",
           source: "Business Daily",
           publishedAt: new Date().toISOString(),
+          category: "Business"
         },
         {
           id: 3,
@@ -175,6 +175,7 @@ export default function Home() {
           description: "Scientists find potentially habitable exoplanet in nearby star system",
           source: "Science Journal", 
           publishedAt: new Date().toISOString(),
+          category: "Science"
         },
         {
           id: 4,
@@ -182,6 +183,7 @@ export default function Home() {
           description: "Latest film franchise installment dominates box office worldwide",
           source: "Entertainment Weekly",
           publishedAt: new Date().toISOString(),
+          category: "Entertainment"
         },
         {
           id: 5,
@@ -189,6 +191,7 @@ export default function Home() {
           description: "Underdog team wins against all odds in thrilling finale",
           source: "Sports Network",
           publishedAt: new Date().toISOString(),
+          category: "Sports"
         },
         {
           id: 6,
@@ -196,6 +199,7 @@ export default function Home() {
           description: "Scientists achieve quantum supremacy with revolutionary new processor design",
           source: "Science Daily",
           publishedAt: new Date(Date.now() - 86400000).toISOString(),
+          category: "Science"
         },
         {
           id: 7,
@@ -203,6 +207,7 @@ export default function Home() {
           description: "Major tech companies commit to carbon neutrality by 2030",
           source: "Business Tech",
           publishedAt: new Date(Date.now() - 172800000).toISOString(),
+          category: "Business"
         },
         {
           id: 8,
@@ -210,6 +215,7 @@ export default function Home() {
           description: "Biggest names in music confirmed for summer's hottest event",
           source: "Entertainment Tonight",
           publishedAt: new Date(Date.now() - 259200000).toISOString(),
+          category: "Entertainment"
         }
       ]);
     } finally {
@@ -217,11 +223,11 @@ export default function Home() {
     }
   };
 
-  // Fetch news on mount only
+  // Fetch news on mount and when category changes
   useEffect(() => {
     if (!mounted) return;
     fetchNews();
-  }, [mounted]); // Only fetch once on mount
+  }, [mounted, selectedCategory]); // Fetch on mount and category change
 
   // Category change handler
   const handleCategoryChange = (category: string) => {
