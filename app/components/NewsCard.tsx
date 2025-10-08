@@ -25,7 +25,7 @@ export default function NewsCard({ article }: NewsCardProps) {
   const [loading, setLoading] = useState(false);
   
   const { user } = useAuth();
-  const { isFavorited, toggleFavorite } = useFavorites();
+  const { isFavorited, toggleFavorite, loading: favoritesLoading } = useFavorites();
   const [savingFavorite, setSavingFavorite] = useState(false);
 
   const handleFavoriteClick = async () => {
@@ -118,12 +118,12 @@ export default function NewsCard({ article }: NewsCardProps) {
             {/* Favorite Heart Button */}
             <button
               onClick={handleFavoriteClick}
-              disabled={savingFavorite}
+              disabled={savingFavorite || favoritesLoading}
               className={`flex-shrink-0 p-2 rounded-lg transition-all ${
                 isFavorited(article.id)
                   ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
                   : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white'
-              } ${savingFavorite ? 'opacity-50 cursor-wait' : ''}`}
+              } ${(savingFavorite || favoritesLoading) ? 'opacity-50 cursor-wait' : ''}`}
               title={isFavorited(article.id) ? 'Remove from favorites' : 'Save to favorites'}
             >
               <svg 

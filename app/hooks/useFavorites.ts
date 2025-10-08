@@ -68,7 +68,7 @@ export function useFavorites() {
 
   // Check if an article is favorited
   const isFavorited = (articleId: string): boolean => {
-    return favorites.some(fav => fav.id === articleId);
+    return favorites.some(fav => fav.id === articleId || fav.favoriteId === articleId);
   };
 
   // Get favorite ID for an article
