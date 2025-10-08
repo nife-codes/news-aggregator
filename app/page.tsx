@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import NewsCard from './components/NewsCard';
 import AuthModal from './components/AuthModal';
 import UserProfile from './components/UserProfile';
-import ThemeToggle from './components/ThemeToggle';
 import { useAuth } from './context/AuthContext';
 
 interface Article {
@@ -102,7 +101,6 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortBy, setSortBy] = useState('newest');
-  const [dateFilter, setDateFilter] = useState('');
   
   // Auth state
   const { user } = useAuth();
@@ -117,11 +115,8 @@ export default function Home() {
       
       const matchesCategory = selectedCategory === 'All' || 
                              getArticleCategory(article) === selectedCategory;
-
-      const matchesDate = !dateFilter || 
-                         new Date(article.publishedAt).toISOString().split('T')[0] === dateFilter;
       
-      return matchesSearch && matchesCategory && matchesDate;
+      return matchesSearch && matchesCategory;
     })
     .sort((a, b) => {
       if (sortBy === 'newest') {
@@ -271,9 +266,9 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen p-4 sm:p-8 relative overflow-hidden bg-gray-100 dark:bg-black transition-colors duration-200">
-      {/* Background effects - Only show in dark mode */}
-      <div className="absolute inset-0 overflow-hidden hidden dark:block">
+    <main className="min-h-screen bg-black p-4 sm:p-8 relative overflow-hidden">
+      {/* Background effects */}
+      <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 left-10 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-20 right-10 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
       </div>
@@ -338,20 +333,6 @@ export default function Home() {
                 </option>
               ))}
             </select>
-          </div>
-
-          {/* Date Filter */}
-          <div>
-            <label htmlFor="date" className="block text-gray-900 dark:text-white text-sm font-medium mb-2">
-              Filter by Date
-            </label>
-            <input
-              type="date"
-              id="date"
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/20 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:focus:border-white/40 transition-colors"
-            />
           </div>
 
           {/* Sort Filter */}
@@ -428,9 +409,6 @@ export default function Home() {
 
       {/* Auth Modal */}
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
-      
-      {/* Theme Toggle */}
-      <ThemeToggle />
     </main>
   );
 }
