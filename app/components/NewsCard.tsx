@@ -106,12 +106,12 @@ export default function NewsCard({ article }: NewsCardProps) {
   };
 
   return (
-    <div className="backdrop-blur-2xl bg-white/10 rounded-2xl p-4 sm:p-6 border border-white/30 shadow-xl hover:bg-white/15 transition-all">
+    <div className="backdrop-blur-2xl bg-white/80 dark:bg-white/10 rounded-2xl p-4 sm:p-6 border border-gray-200 dark:border-white/30 shadow-xl hover:bg-white/90 dark:hover:bg-white/15 transition-all">
       {/* Article Header with Favorite Button */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
         <div className="flex-1">
           <div className="flex items-start justify-between gap-2 mb-2">
-            <h2 className="text-lg sm:text-xl font-bold text-white leading-tight flex-1">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white leading-tight flex-1">
               {article.title}
             </h2>
             
@@ -153,12 +153,12 @@ export default function NewsCard({ article }: NewsCardProps) {
       </div>
 
       {/* Article Description */}
-      <p className="text-white/80 mb-4 text-sm sm:text-base leading-relaxed">
+      <p className="text-gray-700 dark:text-white/80 mb-4 text-sm sm:text-base leading-relaxed">
         {article.description}
       </p>
 
       {/* Article Meta */}
-      <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-white/60 mb-4">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500 dark:text-white/60 mb-4">
         <span className="font-medium">{article.source}</span>
         <span>•</span>
         <span>{formatDate(article.publishedAt)}</span>
@@ -219,9 +219,9 @@ export default function NewsCard({ article }: NewsCardProps) {
 
       {/* AI Summary Section */}
       {showSummary && (
-        <div className="mt-4 p-3 sm:p-4 rounded-xl bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-400/20">
+        <div className="mt-4 p-3 sm:p-4 rounded-xl bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-500/10 dark:to-blue-500/10 border border-purple-200 dark:border-purple-400/20">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-base sm:text-lg font-semibold text-purple-300 flex items-center">
+            <h3 className="text-base sm:text-lg font-semibold text-purple-600 dark:text-purple-300 flex items-center">
               <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
