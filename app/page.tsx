@@ -102,6 +102,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortBy, setSortBy] = useState('newest');
+  const [dateFilter, setDateFilter] = useState('');
   
   // Auth state
   const { user } = useAuth();
@@ -116,8 +117,11 @@ export default function Home() {
       
       const matchesCategory = selectedCategory === 'All' || 
                              getArticleCategory(article) === selectedCategory;
+
+      const matchesDate = !dateFilter || 
+                         new Date(article.publishedAt).toISOString().split('T')[0] === dateFilter;
       
-      return matchesSearch && matchesCategory;
+      return matchesSearch && matchesCategory && matchesDate;
     })
     .sort((a, b) => {
       if (sortBy === 'newest') {
@@ -292,15 +296,15 @@ export default function Home() {
       </div>
 
       {/* Glass header - Now cleaner without auth button */}
-      <div className="relative backdrop-blur-2xl bg-white/80 dark:bg-white/10 rounded-3xl p-6 sm:p-8 mb-8 border border-gray-200 dark:border-white/30 shadow-2xl mx-auto max-w-4xl">
+      <div className="relative bg-white dark:(backdrop-blur-2xl bg-white/10) rounded-3xl p-6 sm:p-8 mb-8 border border-gray-200 dark:border-white/30 shadow-lg dark:shadow-2xl mx-auto max-w-4xl">
         <h1 className="text-4xl sm:text-5xl font-bold text-center text-gray-900 dark:text-white mb-2">AI News Aggregator</h1>
         <p className="text-center text-gray-600 dark:text-white/80">Stay informed with AI-powered insights</p>
         {error && <p className="text-center text-yellow-600 dark:text-yellow-400 mt-2">{error}</p>}
       </div>
 
       {/* Search and Filters Section */}
-      <div className="relative backdrop-blur-2xl bg-white/80 dark:bg-white/10 rounded-2xl p-6 mb-8 border border-gray-200 dark:border-white/30 shadow-xl mx-auto max-w-4xl">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="relative bg-gray-50 dark:(backdrop-blur-2xl bg-white/10) rounded-2xl p-6 mb-8 border border-gray-200 dark:border-white/30 shadow-md dark:shadow-xl mx-auto max-w-4xl">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           
           {/* Search Input */}
           <div className="md:col-span-2">
@@ -313,7 +317,7 @@ export default function Home() {
               placeholder="Search by title, description, or source..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/20 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-white/60 focus:outline-none focus:border-gray-300 dark:focus:border-white/40 transition-colors"
+              className="w-full px-4 py-3 rounded-xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/20 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:focus:border-white/40 transition-colors"
             />
           </div>
 
@@ -336,19 +340,33 @@ export default function Home() {
             </select>
           </div>
 
+          {/* Date Filter */}
+          <div>
+            <label htmlFor="date" className="block text-gray-900 dark:text-white text-sm font-medium mb-2">
+              Filter by Date
+            </label>
+            <input
+              type="date"
+              id="date"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/20 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:focus:border-white/40 transition-colors"
+            />
+          </div>
+
           {/* Sort Filter */}
           <div>
-            <label htmlFor="sort" className="block text-white text-sm font-medium mb-2">
+            <label htmlFor="sort" className="block text-gray-900 dark:text-white text-sm font-medium mb-2">
               Sort By
             </label>
             <select
               id="sort"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/20 text-white focus:outline-none focus:border-white/40 transition-colors"
+              className="w-full px-4 py-3 rounded-xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/20 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:focus:border-white/40 transition-colors"
             >
-              <option value="newest" className="bg-gray-800">Newest First</option>
-              <option value="oldest" className="bg-gray-800">Oldest First</option>
+              <option value="newest" className="bg-white dark:bg-gray-800">Newest First</option>
+              <option value="oldest" className="bg-white dark:bg-gray-800">Oldest First</option>
             </select>
           </div>
 
