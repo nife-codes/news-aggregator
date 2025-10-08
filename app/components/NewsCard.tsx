@@ -106,7 +106,7 @@ export default function NewsCard({ article }: NewsCardProps) {
   };
 
   return (
-    <div className="bg-white dark:(backdrop-blur-2xl bg-white/10) rounded-2xl p-4 sm:p-6 border border-gray-200 dark:border-white/30 shadow-md dark:shadow-xl hover:bg-gray-50 dark:hover:bg-white/15 transition-all">
+    <div className="bg-white dark:bg-transparent dark:backdrop-blur-2xl dark:bg-white/10 rounded-2xl p-4 sm:p-6 border border-gray-200 dark:border-white/30 shadow-md dark:shadow-xl hover:bg-gray-50 dark:hover:bg-white/15 transition-all duration-200">
       {/* Article Header with Favorite Button */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
         <div className="flex-1">

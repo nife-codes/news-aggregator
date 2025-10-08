@@ -271,11 +271,11 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen p-4 sm:p-8 relative overflow-hidden dark:bg-black bg-gray-50">
-      {/* Background effects */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-20 left-10 w-96 h-96 bg-purple-500/20 dark:bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-80 h-80 bg-blue-500/20 dark:bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+    <main className="min-h-screen p-4 sm:p-8 relative overflow-hidden bg-gray-100 dark:bg-black transition-colors duration-200">
+      {/* Background effects - Only show in dark mode */}
+      <div className="absolute inset-0 overflow-hidden hidden dark:block">
+        <div className="absolute top-20 left-10 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
       </div>
 
       {/* Auth Button - Separate, outside header */}
@@ -296,14 +296,14 @@ export default function Home() {
       </div>
 
       {/* Glass header - Now cleaner without auth button */}
-      <div className="relative bg-white dark:(backdrop-blur-2xl bg-white/10) rounded-3xl p-6 sm:p-8 mb-8 border border-gray-200 dark:border-white/30 shadow-lg dark:shadow-2xl mx-auto max-w-4xl">
+      <div className="relative bg-white dark:bg-transparent dark:backdrop-blur-2xl dark:bg-white/10 rounded-3xl p-6 sm:p-8 mb-8 border border-gray-200 dark:border-white/30 shadow-lg dark:shadow-2xl mx-auto max-w-4xl transition-all duration-200">
         <h1 className="text-4xl sm:text-5xl font-bold text-center text-gray-900 dark:text-white mb-2">AI News Aggregator</h1>
         <p className="text-center text-gray-600 dark:text-white/80">Stay informed with AI-powered insights</p>
         {error && <p className="text-center text-yellow-600 dark:text-yellow-400 mt-2">{error}</p>}
       </div>
 
       {/* Search and Filters Section */}
-      <div className="relative bg-gray-50 dark:(backdrop-blur-2xl bg-white/10) rounded-2xl p-6 mb-8 border border-gray-200 dark:border-white/30 shadow-md dark:shadow-xl mx-auto max-w-4xl">
+      <div className="relative bg-white dark:bg-transparent dark:backdrop-blur-2xl dark:bg-white/10 rounded-2xl p-6 mb-8 border border-gray-200 dark:border-white/30 shadow-md dark:shadow-xl mx-auto max-w-4xl transition-all duration-200">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           
           {/* Search Input */}

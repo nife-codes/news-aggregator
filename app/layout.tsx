@@ -27,12 +27,14 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.className} ${geistMono.className} antialiased bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen`}
+        className={`${geistSans.className} ${geistMono.className} antialiased bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-200`}
         suppressHydrationWarning
       >
         <AuthProvider>
           <ThemeProvider>
-            {children}
+            <div className="transition-colors duration-200">
+              {children}
+            </div>
           </ThemeProvider>
         </AuthProvider>
       </body>
