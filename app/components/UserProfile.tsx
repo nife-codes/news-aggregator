@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 export default function UserProfile() {
   const { user, logout } = useAuth();
   const [showMenu, setShowMenu] = useState(false);
+  const router = useRouter();
 
   if (!user) return null;
 
@@ -71,7 +72,7 @@ export default function UserProfile() {
             <div className="p-2">
               <button
                 onClick={() => {
-                  // Navigate to favorites (we'll add this route later)
+                  router.push('/favorites');
                   setShowMenu(false);
                 }}
                 className="w-full text-left px-4 py-2 text-white hover:bg-white/10 rounded-lg transition-colors flex items-center gap-2"
