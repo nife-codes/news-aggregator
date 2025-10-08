@@ -1,15 +1,18 @@
 "use client";
 
 import { useState } from 'react';
+import { useFavorites } from '../hooks/useFavorites';
+import { useAuth } from '../context/AuthContext';
 
 interface Article {
-  id: number;
+  id: string;
   title: string;
   description: string;
   source: string;
   publishedAt: string;
   url?: string;
   imageUrl?: string;
+  category?: string;
 }
 
 interface NewsCardProps {
@@ -20,10 +23,30 @@ export default function NewsCard({ article }: NewsCardProps) {
   const [showSummary, setShowSummary] = useState(false);
   const [summary, setSummary] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  const { user } = useAuth();
+  const { isFavorited, toggleFavorite } = useFavorites();
+  const [savingFavorite, setSavingFavorite] = useState(false);
+
+  const handleFavoriteClick = async () => {
+    if (!user) {
+      alert('Please sign in to save articles');
+      return;
+    }
+
+    try {
+      setSavingFavorite(true);
+      await toggleFavorite(article);
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      alert('Failed to save article. Please try again.');
+    } finally {
+      setSavingFavorite(false);
+    }
+  };
 
   // Format markdown-style summary to HTML - COMPACT VERSION
   const formatSummary = (text: string) => {
-    // Split into lines and process each
     const lines = text.split('\n').filter(line => line.trim());
     
     let html = '';
@@ -31,19 +54,15 @@ export default function NewsCard({ article }: NewsCardProps) {
     lines.forEach(line => {
       const trimmed = line.trim();
       
-      // Skip empty lines
       if (!trimmed) return;
       
-      // Section headers (lines ending with :)
       if (trimmed.endsWith(':')) {
         html += `<div class="text-purple-300 font-bold mt-3 mb-1">${trimmed}</div>`;
       }
-      // Bullet points - convert to regular text
       else if (trimmed.startsWith('•')) {
         const text = trimmed.replace(/^•\s*/, '');
         html += `<div class="mb-1">${text.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')}</div>`;
       }
-      // Regular paragraphs
       else {
         html += `<div class="mb-2">${trimmed.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')}</div>`;
       }
@@ -88,11 +107,42 @@ export default function NewsCard({ article }: NewsCardProps) {
 
   return (
     <div className="backdrop-blur-2xl bg-white/10 rounded-2xl p-4 sm:p-6 border border-white/30 shadow-xl hover:bg-white/15 transition-all">
-      {/* Article Header */}
+      {/* Article Header with Favorite Button */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
-        <h2 className="text-lg sm:text-xl font-bold text-white leading-tight flex-1">
-          {article.title}
-        </h2>
+        <div className="flex-1">
+          <div className="flex items-start justify-between gap-2 mb-2">
+            <h2 className="text-lg sm:text-xl font-bold text-white leading-tight flex-1">
+              {article.title}
+            </h2>
+            
+            {/* Favorite Heart Button */}
+            <button
+              onClick={handleFavoriteClick}
+              disabled={savingFavorite}
+              className={`flex-shrink-0 p-2 rounded-lg transition-all ${
+                isFavorited(article.id)
+                  ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
+                  : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white'
+              } ${savingFavorite ? 'opacity-50 cursor-wait' : ''}`}
+              title={isFavorited(article.id) ? 'Remove from favorites' : 'Save to favorites'}
+            >
+              <svg 
+                className="w-5 h-5" 
+                fill={isFavorited(article.id) ? 'currentColor' : 'none'} 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" 
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+        
         {article.imageUrl && (
           <img 
             src={article.imageUrl} 
@@ -167,7 +217,7 @@ export default function NewsCard({ article }: NewsCardProps) {
         )}
       </div>
 
-      {/* AI Summary Section - MOBILE OPTIMIZED */}
+      {/* AI Summary Section */}
       {showSummary && (
         <div className="mt-4 p-3 sm:p-4 rounded-xl bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-400/20">
           <div className="flex items-center justify-between mb-3">
@@ -203,7 +253,7 @@ export default function NewsCard({ article }: NewsCardProps) {
               <div 
                 className="text-white/90 text-sm sm:text-base leading-snug"
                 dangerouslySetInnerHTML={{ __html: formatSummary(summary) }}
-              />
+              ></div>
             </div>
           )}
         </div>

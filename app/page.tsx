@@ -7,7 +7,7 @@ import UserProfile from './components/UserProfile';
 import { useAuth } from './context/AuthContext';
 
 interface Article {
-  id: number;
+  id: string;
   title: string;
   description: string;
   source: string;
@@ -154,7 +154,7 @@ export default function Home() {
       // Enhanced fallback data with better category coverage
       setArticles([
         {
-          id: 1,
+          id: "1",
           title: "AI Breakthrough: New Model Outperforms Humans",
           description: "Researchers develop AI system that surpasses human performance in complex reasoning tasks",
           source: "Tech Insider",
@@ -162,7 +162,7 @@ export default function Home() {
           category: "Technology"
         },
         {
-          id: 2,
+          id: "2",
           title: "Stock Markets Reach All-Time High", 
           description: "Major indices surge amid economic optimism and strong corporate earnings",
           source: "Business Daily",
@@ -170,7 +170,7 @@ export default function Home() {
           category: "Business"
         },
         {
-          id: 3,
+          id: "3",
           title: "NASA Discovers New Earth-Like Planet",
           description: "Scientists find potentially habitable exoplanet in nearby star system",
           source: "Science Journal", 
@@ -178,7 +178,7 @@ export default function Home() {
           category: "Science"
         },
         {
-          id: 4,
+          id: "4",
           title: "New Blockbuster Movie Breaks Records",
           description: "Latest film franchise installment dominates box office worldwide",
           source: "Entertainment Weekly",
@@ -186,7 +186,7 @@ export default function Home() {
           category: "Entertainment"
         },
         {
-          id: 5,
+          id: "5",
           title: "Championship Game Ends in Historic Victory",
           description: "Underdog team wins against all odds in thrilling finale",
           source: "Sports Network",
@@ -194,7 +194,7 @@ export default function Home() {
           category: "Sports"
         },
         {
-          id: 6,
+          id: "6",
           title: "Quantum Computing Milestone Reached",
           description: "Scientists achieve quantum supremacy with revolutionary new processor design",
           source: "Science Daily",
@@ -202,7 +202,7 @@ export default function Home() {
           category: "Science"
         },
         {
-          id: 7,
+          id: "7",
           title: "Global Tech Summit Announces Climate Initiatives",
           description: "Major tech companies commit to carbon neutrality by 2030",
           source: "Business Tech",
@@ -210,7 +210,7 @@ export default function Home() {
           category: "Business"
         },
         {
-          id: 8,
+          id: "8",
           title: "Music Festival Lineup Announced",
           description: "Biggest names in music confirmed for summer's hottest event",
           source: "Entertainment Tonight",
